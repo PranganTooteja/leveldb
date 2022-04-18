@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "db/memtable.h"
+#include "db/rangedmemtable.h"
 #include "db/dbformat.h"
 #include "leveldb/comparator.h"
 #include "leveldb/env.h"
@@ -11,10 +11,6 @@
 
 namespace leveldb {
 
-int num_shards = 10;
-
-int max_key_size = 1000000;
-
 static Slice GetLengthPrefixedSlice(const char* data) {
   uint32_t len;
   const char* p = data;
@@ -22,14 +18,14 @@ static Slice GetLengthPrefixedSlice(const char* data) {
   return Slice(p, len);
 }
 
-MemTable::MemTable(const InternalKeyComparator& comparator)
+RangedMemTable::RangedMemTable(const InternalKeyComparator& comparator)
     : comparator_(comparator), refs_(0), table_(comparator_, &arena_) {}
 
-MemTable::~MemTable() { assert(refs_ == 0); }
+RangedMemTable::~RangedMemTable() { assert(refs_ == 0); }
 
-size_t MemTable::ApproximateMemoryUsage() { return arena_.MemoryUsage(); }
+size_t RangedMemTable::ApproximateMemoryUsage() { return arena_.MemoryUsage(); }
 
-int MemTable::KeyComparator::operator()(const char* aptr,
+int RangedMemTable::KeyComparator::operator()(const char* aptr,
                                         const char* bptr) const {
   // Internal keys are encoded as length-prefixed strings.
   Slice a = GetLengthPrefixedSlice(aptr);
@@ -47,14 +43,14 @@ static const char* EncodeKey(std::string* scratch, const Slice& target) {
   return scratch->data();
 }
 
-class MemTableIterator : public Iterator {
+class RangedMemTableIterator : public Iterator {
  public:
-  explicit MemTableIterator(MemTable::Table* table) : iter_(table) {}
+  explicit RangedMemTableIterator(RangedMemTable::Table* table) : iter_(table) {}
 
-  MemTableIterator(const MemTableIterator&) = delete;
-  MemTableIterator& operator=(const MemTableIterator&) = delete;
+  RangedMemTableIterator(const RangedMemTableIterator&) = delete;
+  RangedMemTableIterator& operator=(const RangedMemTableIterator&) = delete;
 
-  ~MemTableIterator() override = default;
+  ~RangedMemTableIterator() override = default;
 
   bool Valid() const override { return iter_.Valid(); }
   void Seek(const Slice& k) override { iter_.Seek(EncodeKey(&tmp_, k)); }
@@ -71,13 +67,13 @@ class MemTableIterator : public Iterator {
   Status status() const override { return Status::OK(); }
 
  private:
-  MemTable::Table::Iterator iter_;
+  RangedMemTable::Table::Iterator iter_;
   std::string tmp_;  // For passing to EncodeKey
 };
 
-Iterator* MemTable::NewIterator() { return new MemTableIterator(&table_); }
+Iterator* RangedMemTable::NewIterator() { return new RangedMemTableIterator(&table_); }
 
-void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
+void RangedMemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
                    const Slice& value) {
   // Format of an entry is concatenation of:
   //  key_size     : varint32 of internal_key.size()
@@ -103,7 +99,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
   table_.Insert(buf);
 }
 
-bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
+bool RangedMemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   Slice memkey = key.memtable_key();
   Table::Iterator iter(&table_);
   iter.Seek(memkey.data());
