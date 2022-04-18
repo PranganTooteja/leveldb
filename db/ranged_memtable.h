@@ -1,31 +1,27 @@
-// Copyright (c) 2011 The LevelDB Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file. See the AUTHORS file for names of contributors.
-
-#ifndef STORAGE_LEVELDB_DB_MEMTABLE_H_
-#define STORAGE_LEVELDB_DB_MEMTABLE_H_
-
 #include <string>
 
-#include "db/ranged_memtable.h"
 #include "db/dbformat.h"
 #include "db/skiplist.h"
 #include "leveldb/db.h"
 #include "util/arena.h"
 
+#ifndef STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
+#define STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
+
+
 namespace leveldb {
 
 class InternalKeyComparator;
-class MemTableIterator;
+class RangedMemTableIterator;
 
-class MemTable {
+class RangedMemtable {
  public:
-  // MemTables are reference counted.  The initial reference count
+  // RangedMemtables are reference counted.  The initial reference count
   // is zero and the caller must call Ref() at least once.
-  explicit MemTable(const InternalKeyComparator& comparator);
+  explicit RangedMemtable(const InternalKeyComparator& comparator);
 
-  MemTable(const MemTable&) = delete;
-  MemTable& operator=(const MemTable&) = delete;
+  RangedMemtable(const RangedMemtable&) = delete;
+  RangedMemtable& operator=(const RangedMemtable&) = delete;
 
   // Increase reference count.
   void Ref() { ++refs_; }
@@ -40,12 +36,12 @@ class MemTable {
   }
 
   // Returns an estimate of the number of bytes of data in use by this
-  // data structure. It is safe to call when MemTable is being modified.
+  // data structure. It is safe to call when RangedMemtable is being modified.
   size_t ApproximateMemoryUsage();
 
   // Return an iterator that yields the contents of the memtable.
   //
-  // The caller must ensure that the underlying MemTable remains live
+  // The caller must ensure that the underlying RangedMemtable remains live
   // while the returned iterator is live.  The keys returned by this
   // iterator are internal keys encoded by AppendInternalKey in the
   // db/format.{h,cc} module.
@@ -64,9 +60,9 @@ class MemTable {
   bool Get(const LookupKey& key, std::string* value, Status* s);
 
  private:
-  friend class MemTableIterator;
-  friend class MemTableBackwardIterator;
-  friend class RangedMemtable;
+  friend class RangedMemtableIterator;
+  friend class MemtableBackwardIterator;
+  friend class Memtable;
 
   struct KeyComparator {
     const InternalKeyComparator comparator;
@@ -76,17 +72,20 @@ class MemTable {
 
   typedef SkipList<const char*, KeyComparator> Table;
 
-  ~MemTable();  // Private since only Unref() should be used to delete it
-
   KeyComparator comparator_;
   int refs_;
   Arena arena_;
   Table table_;
 
-  //std::vector<RangedMemtable> memtables_;
+  ~RangedMemtable();  // Private since only Unref() should be used to delete it
+
+  struct KeyRange {
+    int begin = -1;
+    int end = -1;
+  };
   
 };
 
 }  // namespace leveldb
 
-#endif  // STORAGE_LEVELDB_DB_MEMTABLE_H_
+#endif //STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
