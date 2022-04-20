@@ -63,6 +63,13 @@ class RangedMemtable {
 
   ~RangedMemtable();
 
+  struct KeyRange {
+    int begin = -1;
+    int end = -1;
+  };
+
+  KeyRange keyRange_;
+
  private:
   friend class RangedMemtableIterator;
   friend class MemtableBackwardIterator;
@@ -82,11 +89,6 @@ class RangedMemtable {
   Table table_;
 
     // Private since only Unref() should be used to delete it
-
-  struct KeyRange {
-    int begin = -1;
-    int end = -1;
-  };
   
 };
 
