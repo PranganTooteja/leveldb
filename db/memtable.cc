@@ -24,12 +24,10 @@ MemTable::MemTable(const InternalKeyComparator& comparator)
     : comparator_(comparator), refs_(0), table_(comparator_, &arena_) {
       std::vector<RangedMemtable> memtables_;
       memtables_.reserve(kNumMemtables);
-      RangedMemtable * rangedMemtable;
       for (int i = 0; i < kNumMemtables; i++){
-        rangedMemtable = &RangedMemtable(comparator);
+        RangedMemtable * rangedMemtable = new RangedMemtable(comparator);
         rangedMemtable->Ref();
-        memtables_.push_back(RangedMemtable(comparator));
-
+        memtables_.push_back(*rangedMemtable);
       }
     }
 
