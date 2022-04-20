@@ -83,7 +83,7 @@ class MemTable {
   Arena arena_;
   Table table_;
 
-  //std::vector<RangedMemtable> memtables_;
+  std::vector<RangedMemtable> memtables_;
   
 };
 

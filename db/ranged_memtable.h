@@ -1,3 +1,7 @@
+#ifndef STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
+#define STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
+
+
 #include <string>
 
 #include "db/dbformat.h"
@@ -5,8 +9,6 @@
 #include "leveldb/db.h"
 #include "util/arena.h"
 
-#ifndef STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
-#define STORAGE_LEVELDB_DB_RANGED_MEMTABLE_H_
 
 
 namespace leveldb {
@@ -59,6 +61,8 @@ class RangedMemtable {
   // Else, return false.
   bool Get(const LookupKey& key, std::string* value, Status* s);
 
+  ~RangedMemtable();
+
  private:
   friend class RangedMemtableIterator;
   friend class MemtableBackwardIterator;
@@ -77,7 +81,7 @@ class RangedMemtable {
   Arena arena_;
   Table table_;
 
-  ~RangedMemtable();  // Private since only Unref() should be used to delete it
+    // Private since only Unref() should be used to delete it
 
   struct KeyRange {
     int begin = -1;
