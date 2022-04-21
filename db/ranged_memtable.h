@@ -22,8 +22,10 @@ class RangedMemtable {
   // is zero and the caller must call Ref() at least once.
   explicit RangedMemtable(const InternalKeyComparator& comparator);
 
-  RangedMemtable(const RangedMemtable&) = delete;
-  RangedMemtable& operator=(const RangedMemtable&) = delete;
+  RangedMemtable();
+
+  RangedMemtable(const RangedMemtable&);
+  RangedMemtable& operator=(const RangedMemtable&);
 
   // Increase reference count.
   void Ref() { ++refs_; }

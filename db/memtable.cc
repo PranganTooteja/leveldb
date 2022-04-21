@@ -23,11 +23,12 @@ static Slice GetLengthPrefixedSlice(const char* data) {
 MemTable::MemTable(const InternalKeyComparator& comparator)
     : comparator_(comparator), refs_(0), table_(comparator_, &arena_) {
       std::vector<RangedMemtable> memtables_;
-      memtables_.reserve(kNumMemtables);
+      // memtables_.reserve(kNumMemtables);
       for (int i = 0; i < kNumMemtables; i++){
         RangedMemtable * rangedMemtable = new RangedMemtable(comparator);
         rangedMemtable->Ref();
         memtables_.push_back(*rangedMemtable);
+        // memtables_.push_back(RangedMemtable(comparator));
       }
     }
 
