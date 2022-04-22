@@ -11,7 +11,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "db/builder.h"
 #include "db/db_iter.h"
@@ -35,7 +34,6 @@
 #include "util/coding.h"
 #include "util/logging.h"
 #include "util/mutexlock.h"
-
 
 namespace leveldb {
 
@@ -1116,8 +1114,6 @@ int64_t DBImpl::TEST_MaxNextLevelOverlappingBytes() {
 
 Status DBImpl::Get(const ReadOptions& options, const Slice& key,
                    std::string* value) {
-
-  std::cout << key.ToString() << std::endl;
   Status s;
   MutexLock l(&mutex_);
   SequenceNumber snapshot;

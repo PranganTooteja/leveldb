@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "db/ranged_memtable.h"
 #include "db/dbformat.h"
 #include "db/skiplist.h"
 #include "leveldb/db.h"
@@ -66,7 +65,6 @@ class MemTable {
  private:
   friend class MemTableIterator;
   friend class MemTableBackwardIterator;
-  friend class RangedMemtable;
 
   struct KeyComparator {
     const InternalKeyComparator comparator;
@@ -82,9 +80,6 @@ class MemTable {
   int refs_;
   Arena arena_;
   Table table_;
-
-  std::vector<RangedMemtable> memtables_;
-  
 };
 
 }  // namespace leveldb
