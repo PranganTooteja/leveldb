@@ -49,6 +49,7 @@ class MemTable {
   // iterator are internal keys encoded by AppendInternalKey in the
   // db/format.{h,cc} module.
   Iterator* NewIterator();
+  Iterator* NewSecondIterator();
 
   // Add an entry into memtable that maps key to value at the
   // specified sequence number and with the specified type.
@@ -79,7 +80,9 @@ class MemTable {
   KeyComparator comparator_;
   int refs_;
   Arena arena_;
+  Arena arena1_;
   Table table_;
+  Table table1_;
 };
 
 }  // namespace leveldb
