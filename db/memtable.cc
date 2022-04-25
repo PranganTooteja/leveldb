@@ -8,6 +8,7 @@
 #include "leveldb/env.h"
 #include "leveldb/iterator.h"
 #include "util/coding.h"
+#include <iostream>
 
 namespace leveldb {
 
@@ -83,7 +84,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
   //  tag          : uint64((sequence << 8) | type)
   //  value_size   : varint32 of value.size()
   //  value bytes  : char[value.size()]
-  const char* threshold = "1000000";
+  const char* threshold = "0000000000500000";
 
   size_t key_size = key.size();
   size_t val_size = value.size();
@@ -92,6 +93,8 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
                              internal_key_size + VarintLength(val_size) +
                              val_size;
 
+  // std::cout << key.ToString().c_str() << std::endl;
+  // std::cout << comparator_(key.data(), threshold) << std::endl;
   if (comparator_(key.data(), threshold) < 0){
     char* buf = arena1_.Allocate(encoded_len);
     char* p = EncodeVarint32(buf, internal_key_size);
@@ -122,7 +125,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
 bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   Slice memkey = key.memtable_key();
 
-  const char* threshold = "1000000";
+  const char* threshold = "0000000000500000";
   Table::Iterator iter(&table_);
   if (comparator_(memkey.data(), threshold) < 0){
     Table::Iterator iter(&table1_);
