@@ -79,4 +79,87 @@ Status BuildTable(const std::string& dbname, Env* env, const Options& options,
   return s;
 }
 
+Status BuildTable2(const std::string& dbname, Env* env, const Options& options,
+                  TableCache* table_cache, Iterator* iter, Iterator* iter2, FileMetaData* meta) {
+  Status s;
+  meta->file_size = 0;
+  iter->SeekToFirst();
+  //added
+  iter2->SeekToFirst();
+
+  std::string fname = TableFileName(dbname, meta->number);
+  //added
+  if (iter->Valid() && iter2->Valid()) {
+    WritableFile* file;
+    s = env->NewWritableFile(fname, &file);
+    if (!s.ok()) {
+      return s;
+    }
+
+    TableBuilder* builder = new TableBuilder(options, file);
+    meta->smallest.DecodeFrom(iter->key());
+    Slice key;
+    for (; iter->Valid(); iter->Next()) {
+      key = iter->key();
+      builder->Add(key, iter->value());
+    }
+    if (!key.empty()) {
+      meta->largest.DecodeFrom(key);
+    }
+
+    //added
+    meta->smallest.DecodeFrom(iter2->key());
+    for (; iter2->Valid(); iter2->Next()) {
+      key = iter2->key();
+      builder->Add(key, iter2->value());
+    }
+    if (!key.empty()) {
+      meta->largest.DecodeFrom(key);
+    }
+
+
+    // Finish and check for builder errors
+    s = builder->Finish();
+    if (s.ok()) {
+      meta->file_size = builder->FileSize();
+      assert(meta->file_size > 0);
+    }
+    delete builder;
+
+    // Finish and check for file errors
+    if (s.ok()) {
+      s = file->Sync();
+    }
+    if (s.ok()) {
+      s = file->Close();
+    }
+    delete file;
+    file = nullptr;
+
+    if (s.ok()) {
+      // Verify that the table is usable
+      Iterator* it = table_cache->NewIterator(ReadOptions(), meta->number,
+                                              meta->file_size);
+      s = it->status();
+      delete it;
+    }
+  }
+
+  // Check for input iterator errors
+  if (!iter->status().ok()) {
+    s = iter->status();
+  } 
+    //added
+  else if (!iter2->status().ok()) {
+    s = iter2->status();
+  }
+
+  if (s.ok() && meta->file_size > 0) {
+    // Keep it
+  } else {
+    env->RemoveFile(fname);
+  }
+  return s;
+}
+
 }  // namespace leveldb

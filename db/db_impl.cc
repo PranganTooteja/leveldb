@@ -510,13 +510,17 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
   meta.number = versions_->NewFileNumber();
   pending_outputs_.insert(meta.number);
   Iterator* iter = mem->NewIterator();
+  //added
+  Iterator* iter2 = mem->NewSecondIterator();
   Log(options_.info_log, "Level-0 table #%llu: started",
       (unsigned long long)meta.number);
 
   Status s;
   {
     mutex_.Unlock();
-    s = BuildTable(dbname_, env_, options_, table_cache_, iter, &meta);
+    // s = BuildTable(dbname_, env_, options_, table_cache_, iter, &meta);
+    //added
+    s = BuildTable2(dbname_, env_, options_, table_cache_, iter, iter2, &meta);
     mutex_.Lock();
   }
 
@@ -524,6 +528,8 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
       (unsigned long long)meta.number, (unsigned long long)meta.file_size,
       s.ToString().c_str());
   delete iter;
+  //added
+  delete iter2;
   pending_outputs_.erase(meta.number);
 
   // Note that if file_size is zero, the file has been deleted and
