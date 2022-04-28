@@ -126,12 +126,16 @@ bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   Slice memkey = key.memtable_key();
 
   const char* threshold = "0000000000500000";
-  Table::Iterator iter(&table_);
-  if (comparator_(memkey.data(), threshold) < 0){
-    Table::Iterator iter(&table1_);
+
+  Table * t;
+  if (comparator_(key.user_key().data(), threshold) < 0){
+    t = &table1_;
   } else {
-    Table::Iterator iter(&table_);
+    t = &table_;
   }
+
+  Table::Iterator iter(&*t);
+
   iter.Seek(memkey.data());
   if (iter.Valid()) {
     // entry format is:
