@@ -84,7 +84,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
   //  tag          : uint64((sequence << 8) | type)
   //  value_size   : varint32 of value.size()
   //  value bytes  : char[value.size()]
-  const char* threshold = "0000000000500000";
+  const char* threshold = "0000000000050000";
 
   size_t key_size = key.size();
   size_t val_size = value.size();
@@ -125,9 +125,13 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
 bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   Slice memkey = key.memtable_key();
 
-  const char* threshold = "0000000000500000";
+  const char* threshold = "0000000000050000";
+  //const char* threshold = "0000000000013937??"
 
   Table * t;
+  // std::cout << "USER KEY: " << key.user_key().ToString() << std::endl;
+  // std::cout << key.user_key().ToString() << std::endl;
+  // std::cout << comparator_(key.user_key().data(), threshold) << std::endl;
   if (comparator_(key.user_key().data(), threshold) < 0){
     t = &table1_;
   } else {
