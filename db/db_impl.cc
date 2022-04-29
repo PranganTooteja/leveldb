@@ -510,8 +510,14 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
   meta.number = versions_->NewFileNumber();
   pending_outputs_.insert(meta.number);
   Iterator* iter = mem->NewSecondIterator();
-  //added
   Iterator* iter2 = mem->NewIterator();
+  // Iterator* iter;
+  // if (mem->GetLargerTable() == 1) {
+  // Iterator* iter = mem->NewIterator();
+  // } else {
+  //   //added
+  // Iterator* iter = mem->NewSecondIterator();
+  // }
   Log(options_.info_log, "Level-0 table #%llu: started",
       (unsigned long long)meta.number);
 

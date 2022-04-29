@@ -24,7 +24,15 @@ MemTable::MemTable(const InternalKeyComparator& comparator)
 
 MemTable::~MemTable() { assert(refs_ == 0); }
 
-size_t MemTable::ApproximateMemoryUsage() { return arena_.MemoryUsage(); }
+size_t MemTable::ApproximateMemoryUsage() { return arena_.MemoryUsage() + arena1_.MemoryUsage(); }
+
+int MemTable::GetLargerTable() {
+  if (arena_.MemoryUsage() < arena1_.MemoryUsage()) {
+    return 2;
+  } else {
+    return 1;
+  }
+}
 
 int MemTable::KeyComparator::operator()(const char* aptr,
                                         const char* bptr) const {
@@ -84,7 +92,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
   //  tag          : uint64((sequence << 8) | type)
   //  value_size   : varint32 of value.size()
   //  value bytes  : char[value.size()]
-  const char* threshold = "0000000000050000";
+  const char* threshold = "0000000000500000";
 
   size_t key_size = key.size();
   size_t val_size = value.size();
@@ -125,7 +133,7 @@ void MemTable::Add(SequenceNumber s, ValueType type, const Slice& key,
 bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
   Slice memkey = key.memtable_key();
 
-  const char* threshold = "0000000000050000";
+  const char* threshold = "0000000000500000";
   //const char* threshold = "0000000000013937??"
 
   Table * t;

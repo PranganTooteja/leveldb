@@ -42,6 +42,8 @@ class MemTable {
   // data structure. It is safe to call when MemTable is being modified.
   size_t ApproximateMemoryUsage();
 
+  int GetLargerTable();
+
   // Return an iterator that yields the contents of the memtable.
   //
   // The caller must ensure that the underlying MemTable remains live

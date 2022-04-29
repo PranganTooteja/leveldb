@@ -103,12 +103,6 @@ Status BuildTable2(const std::string& dbname, Env* env, const Options& options,
       key = iter->key();
       builder->Add(key, iter->value());
     }
-    if (!key.empty()) {
-      meta->largest.DecodeFrom(key);
-    }
-
-    //added
-    meta->smallest.DecodeFrom(iter2->key());
     for (; iter2->Valid(); iter2->Next()) {
       key = iter2->key();
       builder->Add(key, iter2->value());
@@ -116,6 +110,16 @@ Status BuildTable2(const std::string& dbname, Env* env, const Options& options,
     if (!key.empty()) {
       meta->largest.DecodeFrom(key);
     }
+
+    // added
+    // meta->smallest.DecodeFrom(iter2->key());
+    // for (; iter2->Valid(); iter2->Next()) {
+    //   key = iter2->key();
+    //   builder->Add(key, iter2->value());
+    // }
+    // if (!key.empty()) {
+    //   meta->largest.DecodeFrom(key);
+    // }
 
 
     // Finish and check for builder errors
